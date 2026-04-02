@@ -1,31 +1,27 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import type { Profile } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
 
 export default async function PeoplePage() {
   const supabase = await createClient()
 
-  // Get distinct authors who have documents, with their profiles
+  // Get all documents to extract unique author names
   const { data: docs } = await supabase
     .from('documents')
-    .select('author_id, profiles(id, name, email, avatar_url, created_at)')
+    .select('author_name')
 
-  // Deduplicate by author
-  const profileMap = new Map<string, Profile>()
+  // Deduplicate by author_name and count docs
   const docCounts = new Map<string, number>()
   if (docs) {
     for (const doc of docs) {
-      const profile = doc.profiles as unknown as Profile
-      if (profile) {
-        profileMap.set(profile.id, profile)
-        docCounts.set(profile.id, (docCounts.get(profile.id) || 0) + 1)
+      if (doc.author_name) {
+        docCounts.set(doc.author_name, (docCounts.get(doc.author_name) || 0) + 1)
       }
     }
   }
 
-  const contributors = Array.from(profileMap.values())
+  const contributors = Array.from(docCounts.keys())
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
@@ -37,33 +33,29 @@ export default async function PeoplePage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {contributors.map((person) => (
-            <Link
-              key={person.id}
-              href={`/people/${person.id}`}
-              className="rounded-lg border border-[var(--border)] bg-[var(--bg-card)] p-5 hover:border-[var(--accent)] transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                {person.avatar_url ? (
-                  <img
-                    src={person.avatar_url}
-                    alt={person.name}
-                    className="w-10 h-10 rounded-full"
-                  />
-                ) : (
+          {contributors.map((name) => {
+            const slug = name.toLowerCase().replace(/\s+/g, '-')
+            const count = docCounts.get(name) || 0
+            return (
+              <Link
+                key={name}
+                href={`/people/${slug}`}
+                className="rounded-lg border border-[var(--border)] bg-[var(--bg-card)] p-5 hover:border-[var(--accent)] transition-colors"
+              >
+                <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-[var(--border)] flex items-center justify-center text-sm font-medium text-[var(--text-secondary)]">
-                    {person.name.charAt(0).toUpperCase()}
+                    {name.charAt(0).toUpperCase()}
                   </div>
-                )}
-                <div>
-                  <p className="font-medium text-[var(--text)]">{person.name}</p>
-                  <p className="text-xs text-[var(--text-secondary)]">
-                    {docCounts.get(person.id) || 0} post{(docCounts.get(person.id) || 0) !== 1 ? 's' : ''}
-                  </p>
+                  <div>
+                    <p className="font-medium text-[var(--text)]">{name}</p>
+                    <p className="text-xs text-[var(--text-secondary)]">
+                      {count} post{count !== 1 ? 's' : ''}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            )
+          })}
         </div>
       )}
     </div>

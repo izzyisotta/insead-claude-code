@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import DocCard from '@/components/DocCard'
 import Link from 'next/link'
-import type { Document, Profile } from '@/lib/types'
+import type { Document } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,14 +10,9 @@ export default async function HomePage() {
 
   const { data: docs } = await supabase
     .from('documents')
-    .select('*, profiles(*)')
+    .select('*')
     .order('created_at', { ascending: false })
     .limit(12)
-
-  const { data: profileRows } = await supabase
-    .from('profiles')
-    .select('id, name')
-    .limit(20)
 
   // Extract unique categories from docs
   const categoryMap = new Map<string, number>()
@@ -32,7 +27,16 @@ export default async function HomePage() {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10)
 
-  const contributors = (profileRows as Profile[]) ?? []
+  // Extract unique contributor names from documents
+  const contributorSet = new Set<string>()
+  if (docs) {
+    for (const doc of docs) {
+      if ((doc as Document).author_name) {
+        contributorSet.add((doc as Document).author_name)
+      }
+    }
+  }
+  const contributors = Array.from(contributorSet)
   const documents = (docs as Document[]) ?? []
 
   return (
@@ -79,13 +83,13 @@ export default async function HomePage() {
               <p className="text-xs text-[var(--text-secondary)]">No contributors yet.</p>
             ) : (
               <ul className="space-y-1.5">
-                {contributors.map((p) => (
-                  <li key={p.id}>
+                {contributors.map((name) => (
+                  <li key={name}>
                     <Link
-                      href={`/people/${p.id}`}
+                      href={`/people/${name.toLowerCase().replace(/\s+/g, '-')}`}
                       className="text-sm text-[var(--accent)] hover:underline"
                     >
-                      {p.name}
+                      {name}
                     </Link>
                   </li>
                 ))}

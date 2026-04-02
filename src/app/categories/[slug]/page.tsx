@@ -11,7 +11,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
 
   const { data: docs } = await supabase
     .from('documents')
-    .select('*, profiles(*)')
+    .select('*')
     .contains('categories', [category])
     .order('created_at', { ascending: false })
 

@@ -17,8 +17,8 @@ const typeLabels: Record<string, string> = {
 }
 
 export default function DocCard({ doc }: { doc: Document }) {
-  const authorName = doc.profiles?.name ?? 'Unknown'
-  const authorId = doc.profiles?.id ?? doc.author_id
+  const authorName = doc.author_name
+  const authorSlug = authorName.toLowerCase().replace(/\s+/g, '-')
   const date = new Date(doc.created_at).toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'short',
@@ -45,7 +45,7 @@ export default function DocCard({ doc }: { doc: Document }) {
 
       <div className="flex items-center gap-2 text-sm">
         <Link
-          href={`/people/${authorId}`}
+          href={`/people/${authorSlug}`}
           className="text-[var(--accent)] hover:underline"
         >
           {authorName}

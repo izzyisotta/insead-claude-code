@@ -27,7 +27,7 @@ export default async function DocPage({ params }: { params: Promise<{ id: string
 
   const { data } = await supabase
     .from('documents')
-    .select('*, profiles(*)')
+    .select('*')
     .eq('id', id)
     .single()
 
@@ -36,8 +36,8 @@ export default async function DocPage({ params }: { params: Promise<{ id: string
   }
 
   const doc = data as Document
-  const authorName = doc.profiles?.name ?? 'Unknown'
-  const authorId = doc.profiles?.id ?? doc.author_id
+  const authorName = doc.author_name
+  const authorSlug = authorName.toLowerCase().replace(/\s+/g, '-')
   const date = new Date(doc.created_at).toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',
@@ -59,7 +59,7 @@ export default async function DocPage({ params }: { params: Promise<{ id: string
         <p className="text-lg text-[var(--text-secondary)] mb-4">{doc.description}</p>
 
         <div className="flex items-center gap-3 text-sm text-[var(--text-secondary)]">
-          <Link href={`/people/${authorId}`} className="text-[var(--accent)] hover:underline">
+          <Link href={`/people/${authorSlug}`} className="text-[var(--accent)] hover:underline">
             {authorName}
           </Link>
           <span>|</span>

@@ -1,47 +1,41 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import type { User } from '@supabase/supabase-js'
+
+interface LocalUser {
+  name: string
+}
+
+function getStoredUser(): LocalUser | null {
+  if (typeof window === 'undefined') return null
+  const stored = localStorage.getItem('cc-user')
+  if (stored) {
+    try { return JSON.parse(stored) } catch { return null }
+  }
+  return null
+}
 
 export default function AuthButton() {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<LocalUser | null>(null)
+  const [name, setName] = useState('')
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-      setLoading(false)
-    }
-    getUser()
+    setUser(getStoredUser())
+    setLoading(false)
+  }, [])
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [supabase.auth])
-
-  const [email, setEmail] = useState('')
-  const [emailSent, setEmailSent] = useState(false)
-
-  const handleSignIn = async () => {
-    if (!email) return
-    const origin = window.location.origin
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: origin + '/auth/callback',
-      },
-    })
-    if (!error) setEmailSent(true)
+  const handleSignIn = () => {
+    if (!name.trim()) return
+    const u = { name: name.trim() }
+    localStorage.setItem('cc-user', JSON.stringify(u))
+    setUser(u)
+    setName('')
   }
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    window.location.href = '/'
+  const handleSignOut = () => {
+    localStorage.removeItem('cc-user')
+    setUser(null)
   }
 
   if (loading) {
@@ -52,7 +46,7 @@ export default function AuthButton() {
     return (
       <div className="flex items-center gap-3">
         <span className="text-sm text-[var(--text-secondary)]">
-          {user.user_metadata?.full_name || user.user_metadata?.name || user.email}
+          {user.name}
         </span>
         <a
           href="/new"
@@ -70,23 +64,15 @@ export default function AuthButton() {
     )
   }
 
-  if (emailSent) {
-    return (
-      <span className="text-sm text-[var(--accent)]">
-        Check your email for a login link
-      </span>
-    )
-  }
-
   return (
     <div className="flex items-center gap-2">
       <input
-        type="email"
-        placeholder="your@email.com"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        type="text"
+        placeholder="Your name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && handleSignIn()}
-        className="rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-3 py-1.5 text-sm text-[var(--text)] placeholder-[var(--text-secondary)] w-48 focus:outline-none focus:border-[var(--accent)]"
+        className="rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-3 py-1.5 text-sm text-[var(--text)] placeholder-[var(--text-secondary)] w-40 focus:outline-none focus:border-[var(--accent)]"
       />
       <button
         onClick={handleSignIn}
