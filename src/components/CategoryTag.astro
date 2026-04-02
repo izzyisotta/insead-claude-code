@@ -1,0 +1,42 @@
+---
+interface Props {
+  name: string;
+}
+
+const { name } = Astro.props;
+const slug = name.toLowerCase().replace(/\s+/g, '-');
+
+// Generate a consistent colour from the category name
+function hashColor(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue}, 40%, 25%)`;
+}
+
+const bgColor = hashColor(name);
+---
+
+<a href={`/categories/${slug}`} class="tag" style={`background: ${bgColor};`}>
+  {name}
+</a>
+
+<style>
+  .tag {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    color: var(--text);
+    text-decoration: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: opacity 0.15s;
+  }
+
+  .tag:hover {
+    opacity: 0.8;
+    text-decoration: none;
+  }
+</style>

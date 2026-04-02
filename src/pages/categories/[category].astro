@@ -1,0 +1,50 @@
+---
+import Base from '../../layouts/Base.astro';
+import DocCard from '../../components/DocCard.astro';
+import { getCollection } from 'astro:content';
+
+const allDocs = await getCollection('docs');
+
+export async function getStaticPaths() {
+  const allDocs = await getCollection('docs');
+  const allCats = [...new Set(allDocs.flatMap(d => d.data.categories))];
+  return allCats.map(cat => ({
+    params: { category: cat.toLowerCase().replace(/\s+/g, '-') },
+    props: { catName: cat },
+  }));
+}
+
+const { catName } = Astro.props;
+
+const docs = allDocs
+  .filter(d => d.data.categories.includes(catName))
+  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
+---
+
+<Base title={catName}>
+  <a href="/categories" class="back">&larr; All categories</a>
+  <h1>{catName}</h1>
+  <p class="subtitle">{docs.length} {docs.length === 1 ? 'doc' : 'docs'}</p>
+
+  <div class="grid">
+    {docs.map(doc => (
+      <DocCard
+        title={doc.data.title}
+        author={doc.data.author}
+        date={doc.data.date}
+        description={doc.data.description}
+        categories={doc.data.categories}
+        link={doc.data.link}
+        slug={doc.id}
+      />
+    ))}
+  </div>
+</Base>
+
+<style>
+  .back { display: inline-block; color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem; }
+  h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.25rem; }
+  .subtitle { color: var(--text-secondary); margin-bottom: 2rem; }
+  .grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 1rem; }
+  @media (min-width: 640px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+</style>

@@ -1,0 +1,55 @@
+---
+import Base from '../../layouts/Base.astro';
+import CategoryTag from '../../components/CategoryTag.astro';
+import { getCollection } from 'astro:content';
+
+const allDocs = await getCollection('docs');
+const catCounts = new Map<string, number>();
+allDocs.forEach(d => d.data.categories.forEach(c => catCounts.set(c, (catCounts.get(c) || 0) + 1)));
+const categories = [...catCounts.entries()].sort((a, b) => b[1] - a[1]);
+---
+
+<Base title="Categories">
+  <h1>Categories</h1>
+  <p class="subtitle">Browse by topic.</p>
+
+  <div class="cat-grid">
+    {categories.map(([name, count]) => {
+      const slug = name.toLowerCase().replace(/\s+/g, '-');
+      return (
+        <a href={`/categories/${slug}`} class="cat-card">
+          <h2>{name}</h2>
+          <p>{count} {count === 1 ? 'doc' : 'docs'}</p>
+        </a>
+      );
+    })}
+  </div>
+</Base>
+
+<style>
+  h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.25rem; }
+  .subtitle { color: var(--text-secondary); margin-bottom: 2rem; }
+
+  .cat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .cat-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  .cat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    color: var(--text);
+    transition: border-color 0.15s;
+  }
+
+  .cat-card:hover { border-color: var(--accent); text-decoration: none; }
+  .cat-card h2 { font-size: 1rem; margin-bottom: 0.25rem; }
+  .cat-card p { color: var(--text-secondary); font-size: 0.8125rem; }
+</style>

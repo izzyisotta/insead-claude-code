@@ -1,0 +1,89 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const allDocs = await getCollection('docs');
+const authors = [...new Set(allDocs.map(d => d.data.author))];
+const authorData = authors.map(name => ({
+  name,
+  slug: name.toLowerCase().replace(/\s+/g, '-'),
+  count: allDocs.filter(d => d.data.author === name).length,
+  categories: [...new Set(allDocs.filter(d => d.data.author === name).flatMap(d => d.data.categories))],
+})).sort((a, b) => b.count - a.count);
+---
+
+<Base title="People">
+  <h1>Contributors</h1>
+  <p class="subtitle">Everyone who has shared something.</p>
+
+  <div class="people-grid">
+    {authorData.map(a => (
+      <a href={`/people/${a.slug}`} class="person-card">
+        <h2>{a.name}</h2>
+        <p class="count">{a.count} {a.count === 1 ? 'doc' : 'docs'}</p>
+        <p class="cats">{a.categories.join(', ')}</p>
+      </a>
+    ))}
+  </div>
+</Base>
+
+<style>
+  h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.25rem;
+  }
+
+  .subtitle {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+  }
+
+  .people-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .people-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .people-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .person-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    color: var(--text);
+    transition: border-color 0.15s;
+  }
+
+  .person-card:hover {
+    border-color: var(--accent);
+    text-decoration: none;
+  }
+
+  .person-card h2 {
+    font-size: 1.125rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .count {
+    color: var(--accent);
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .cats {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+  }
+</style>
