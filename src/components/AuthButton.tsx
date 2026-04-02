@@ -24,14 +24,19 @@ export default function AuthButton() {
     return () => subscription.unsubscribe()
   }, [supabase.auth])
 
+  const [email, setEmail] = useState('')
+  const [emailSent, setEmailSent] = useState(false)
+
   const handleSignIn = async () => {
+    if (!email) return
     const origin = window.location.origin
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
       options: {
-        redirectTo: origin + '/auth/callback',
+        emailRedirectTo: origin + '/auth/callback',
       },
     })
+    if (!error) setEmailSent(true)
   }
 
   const handleSignOut = async () => {
@@ -65,12 +70,30 @@ export default function AuthButton() {
     )
   }
 
+  if (emailSent) {
+    return (
+      <span className="text-sm text-[var(--accent)]">
+        Check your email for a login link
+      </span>
+    )
+  }
+
   return (
-    <button
-      onClick={handleSignIn}
-      className="rounded-md border border-[var(--border)] px-3 py-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors"
-    >
-      Sign in with Google
-    </button>
+    <div className="flex items-center gap-2">
+      <input
+        type="email"
+        placeholder="your@email.com"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && handleSignIn()}
+        className="rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-3 py-1.5 text-sm text-[var(--text)] placeholder-[var(--text-secondary)] w-48 focus:outline-none focus:border-[var(--accent)]"
+      />
+      <button
+        onClick={handleSignIn}
+        className="rounded-md border border-[var(--border)] px-3 py-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors"
+      >
+        Sign in
+      </button>
+    </div>
   )
 }
