@@ -2,6 +2,7 @@
 title: "Automating Canvas LMS Downloads"
 author: "Isabella Isotta"
 date: 2026-04-02
+type: workflow
 categories: [insead-workflow, automation]
 description: "A Playwright-based pipeline that pulls lecture materials and assignments from INSEAD's Canvas LMS every morning, with no manual downloading."
 ---

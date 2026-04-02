@@ -30,6 +30,7 @@ const categories = [...catCounts.entries()].sort((a, b) => b[1] - a[1]);
           date={doc.data.date}
           description={doc.data.description}
           categories={doc.data.categories}
+          type={doc.data.type}
           link={doc.data.link}
           slug={doc.id}
         />

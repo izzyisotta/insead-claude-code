@@ -2,6 +2,7 @@
 title: "Design Iteration with Two AI Agents"
 author: "Freddie Chambers"
 date: 2026-04-01
+type: skill
 categories: [app-building, design, ai-tools]
 description: "A two-agent system where one AI writes code and another scores the live app through a browser, iterating until the design is genuinely good."
 ---

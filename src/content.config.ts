@@ -7,6 +7,7 @@ const docs = defineCollection({
     title: z.string(),
     author: z.string(),
     date: z.coerce.date(),
+    type: z.enum(['workflow', 'tool', 'skill', 'resource']),
     categories: z.array(z.string()),
     description: z.string(),
     link: z.string().optional(),

@@ -2,6 +2,7 @@
 title: "Morning Triage System"
 author: "Isabella Isotta"
 date: 2026-04-02
+type: workflow
 categories: [productivity, automation]
 description: "A daily ritual skill that enriches new tasks, processes lecture materials, generates assignment first passes, and produces a morning briefing."
 ---

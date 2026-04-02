@@ -6,20 +6,31 @@ interface Props {
   author: string;
   date: Date;
   description: string;
+  type: string;
   categories: string[];
   link?: string;
   slug: string;
 }
 
-const { title, author, date, description, categories, link, slug } = Astro.props;
+const { title, author, date, description, type, categories, link, slug } = Astro.props;
 const dateStr = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 const personSlug = slug.split('/')[0];
 const isLink = !!link;
+
+const typeIcons: Record<string, string> = {
+  workflow: '🔄',
+  tool: '🛠',
+  skill: '⚡',
+  resource: '📎',
+};
+const typeIcon = typeIcons[type] || '';
 ---
 
 <article class="card">
   <div class="card-body">
     <div class="meta">
+      <span class="type-badge">{typeIcon} {type}</span>
+      <span class="sep">&middot;</span>
       <a href={`/people/${personSlug}`} class="author">{author}</a>
       <span class="sep">&middot;</span>
       <time>{dateStr}</time>
@@ -77,6 +88,13 @@ const isLink = !!link;
   .author {
     color: var(--accent);
     font-weight: 500;
+  }
+
+  .type-badge {
+    text-transform: capitalize;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--accent);
   }
 
   .sep {

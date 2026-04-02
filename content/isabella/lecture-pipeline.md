@@ -2,6 +2,7 @@
 title: "AI Lecture Note Generation"
 author: "Isabella Isotta"
 date: 2026-04-02
+type: workflow
 categories: [insead-workflow, automation, ai-tools]
 description: "Turning lecture slides and recording transcripts into comprehensive study notes using Claude Code."
 ---
